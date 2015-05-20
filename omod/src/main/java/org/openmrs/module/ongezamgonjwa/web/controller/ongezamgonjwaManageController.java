@@ -17,13 +17,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
+import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonName;
 import org.openmrs.api.context.Context;
+import org.openmrs.validator.PatientIdentifierValidator;
+import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.context.request.WebRequest;
+
+import javax.servlet.http.HttpSession;
+import java.util.Date;
 
 /**
  * The main controller.
@@ -34,32 +41,54 @@ public class  ongezamgonjwaManageController {
 	protected final Log log = LogFactory.getLog(getClass());
 
 	@RequestMapping(value = "/module/ongezamgonjwa/addpatient.form" ,method = RequestMethod.POST)
-	public void addPatient(@RequestParam(value = "fname", required = false) String fname,
-							   @RequestParam(value = "mname", required = false) String mname,
-							   @RequestParam(value = "lname",required = false)String lname,
+	public String addPatient(ModelMap model, WebRequest webRequest, HttpSession httpSession,
+                           @RequestParam(value = "fname", required = false) String fname,
+                           @RequestParam(value = "mname", required = false) String mname,
+                           @RequestParam(value = "lname",required = false)String lname,
                            @RequestParam(value = "sex",required = false)String sex,
-                           @RequestParam(value = "NID",required = false)String id){
-		Patient patient= new Patient();
-		PersonName personName =new PersonName();
-        PatientIdentifier patientIdentifier=new PatientIdentifier();
-		//PersonAddress personAddress=new PersonAddress();
+                           @RequestParam(value = "NID",required = false)String id) {
+        try{
+            Patient patient = new Patient();
+            PersonName personName = new PersonName();
+            PatientIdentifier patientIdentifier = new PatientIdentifier();
 
-        patientIdentifier.setPatientIdentifierId(Integer.parseInt(id));
 
-		personName.setGivenName(fname);
-		personName.setMiddleName(mname);
-		personName.setFamilyName(lname);
+            personName.setGivenName(fname);
+            personName.setMiddleName(mname);
+            personName.setFamilyName(lname);
 
-		patient.setGender(sex);
-        patient.addIdentifier(patientIdentifier);
+            patient.addName(personName);
 
-		//personAddress.getAddress1();
+            patient.setGender(sex);
 
-		//Set<PersonName> personNameSet=new HashSet<PersonName>();
-		//personNameSet.add(personName);
-		//patient.setNames(personNameSet);
-		patient.addName(personName);
-		Context.getPatientService().savePatient(patient);
+            String TARGET_ID_KEY = "ongezamgonjwamodule.idType";
+            String TARGET_ID = Context.getAdministrationService().getGlobalProperty(TARGET_ID_KEY);
+
+            PatientIdentifierType patientIdentifierType = Context.getPatientService().getPatientIdentifierTypeByName(TARGET_ID);
+            patientIdentifier.setPatientIdentifierId(Integer.parseInt(id));
+
+            patientIdentifier.setIdentifier(id);
+            patientIdentifier.setDateCreated(new Date());
+            patientIdentifier.setLocation(Context.getLocationService().getDefaultLocation());
+            patientIdentifier.setIdentifierType(patientIdentifierType);
+
+
+            PatientIdentifierValidator.validateIdentifier(patientIdentifier);
+            patient.addIdentifier(patientIdentifier);
+
+        //saving the patient
+        if (!Context.getPatientService().isIdentifierInUseByAnotherPatient(patientIdentifier)) {
+            Context.getPatientService().savePatient(patient);
+        }
+        httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "Registered Successfully");
+        return "redirect:manage.form";
+    }
+        catch (Exception ex)
+        {
+            httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "Registration failed-Patient Id taken");
+            return "redirect:manage.form";
+        }
+
     }
     @RequestMapping(value = "/module/ongezamgonjwa/manage", method = RequestMethod.GET)
 	public void manage(ModelMap model) {

@@ -55,9 +55,9 @@
         <tr><td>first name</td><td><input type="text" name="fname" placeholder="enter first name"></td></tr>
         <tr><td>middle name</td><td><input type="text" name="mname" placeholder="enter middle name"></td></tr>
         <tr><td>last name</td><td><input type="text" name="lname" placeholder="enter last name"></td></tr>
-        <input type="radio" name="sex" value="male" checked>Male
+        <tr><input type="radio" name="sex" value="male" checked>Male
         <br>
         <input type="radio" name="sex" value="female">Female
-        <button> Create</button>
+        <button> Create</button><tr>
     </table>
 </form>

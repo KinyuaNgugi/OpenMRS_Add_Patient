@@ -51,9 +51,13 @@
 <%@ include file="template/localHeader.jsp"%>
 <form  action ="<c:url value='/module/ongezamgonjwa/addpatient.form'/>" method='post'>
     <table>
+        <tr><td>ID number</td><td><input type="text" name="NID" placeholder="enter identifier"></td></tr>
         <tr><td>first name</td><td><input type="text" name="fname" placeholder="enter first name"></td></tr>
         <tr><td>middle name</td><td><input type="text" name="mname" placeholder="enter middle name"></td></tr>
         <tr><td>last name</td><td><input type="text" name="lname" placeholder="enter last name"></td></tr>
+        <input type="radio" name="sex" value="male" checked>Male
+        <br>
+        <input type="radio" name="sex" value="female">Female
         <button> Create</button>
     </table>
 </form>

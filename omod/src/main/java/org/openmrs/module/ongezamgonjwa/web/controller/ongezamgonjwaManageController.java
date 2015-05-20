@@ -16,7 +16,7 @@ package org.openmrs.module.ongezamgonjwa.web.controller;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
-import org.openmrs.PersonAddress;
+import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonName;
 import org.openmrs.api.context.Context;
 import org.springframework.stereotype.Controller;
@@ -24,9 +24,6 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * The main controller.
@@ -39,23 +36,31 @@ public class  ongezamgonjwaManageController {
 	@RequestMapping(value = "/module/ongezamgonjwa/addpatient.form" ,method = RequestMethod.POST)
 	public void addPatient(@RequestParam(value = "fname", required = false) String fname,
 							   @RequestParam(value = "mname", required = false) String mname,
-							   @RequestParam(value = "lname",required = false)String lname){
+							   @RequestParam(value = "lname",required = false)String lname,
+                           @RequestParam(value = "sex",required = false)String sex,
+                           @RequestParam(value = "NID",required = false)String id){
 		Patient patient= new Patient();
 		PersonName personName =new PersonName();
-		PersonAddress personAddress=new PersonAddress();
+        PatientIdentifier patientIdentifier=new PatientIdentifier();
+		//PersonAddress personAddress=new PersonAddress();
+
+        patientIdentifier.setPatientIdentifierId(Integer.parseInt(id));
 
 		personName.setGivenName(fname);
 		personName.setMiddleName(mname);
 		personName.setFamilyName(lname);
 
-		personAddress.getAddress1();
+		patient.setGender(sex);
+        patient.addIdentifier(patientIdentifier);
 
-		Set<PersonName> personNameSet=new HashSet<PersonName>();
-		personNameSet.add(personName);
-		patient.setNames(personNameSet);
+		//personAddress.getAddress1();
+
+		//Set<PersonName> personNameSet=new HashSet<PersonName>();
+		//personNameSet.add(personName);
+		//patient.setNames(personNameSet);
+		patient.addName(personName);
 		Context.getPatientService().savePatient(patient);
-
-	}
+    }
     @RequestMapping(value = "/module/ongezamgonjwa/manage", method = RequestMethod.GET)
 	public void manage(ModelMap model) {
 		//List<Patient> allPatients = Context.getPatientService().getAllPatients();

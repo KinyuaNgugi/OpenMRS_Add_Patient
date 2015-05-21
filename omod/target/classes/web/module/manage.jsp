@@ -55,9 +55,11 @@
         <tr><td>first name</td><td><input type="text" name="fname" placeholder="enter first name"></td></tr>
         <tr><td>middle name</td><td><input type="text" name="mname" placeholder="enter middle name"></td></tr>
         <tr><td>last name</td><td><input type="text" name="lname" placeholder="enter last name"></td></tr>
-        <tr><input type="radio" name="sex" value="male" checked>Male
-        <br>
-        <input type="radio" name="sex" value="female">Female
-        <button> Create</button><tr>
+        <tr><td>date of birth</td><td><input type="date" name="dob"></td></tr>
+        <tr><td><input type="radio" name="sex" value="male" checked>Male
+        </td>
+        <td><input type="radio" name="sex" value="female">Female
+        </td></tr>
     </table>
+    <button> Create</button>
 </form>

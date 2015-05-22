@@ -20,18 +20,20 @@ import org.openmrs.PatientIdentifier;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonName;
 import org.openmrs.api.context.Context;
+import org.openmrs.validator.PatientIdentifierValidator;
 import org.openmrs.web.WebConstants;
+import org.springframework.orm.hibernate3.HibernateOptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.context.request.WebRequest;
 
 import javax.servlet.http.HttpSession;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -43,19 +45,20 @@ public class  ongezamgonjwaManageController {
     protected final Log log = LogFactory.getLog(getClass());
     @RequestMapping(value = "/module/ongezamgonjwa/manage", method = RequestMethod.GET)
     public void manage(ModelMap model) {
-        //List<Patient> allPatients = Context.getPatientService().getAllPatients();
-        //model.addAttribute("patients", allPatients);
+        List<Patient> allPatients = Context.getPatientService().getAllPatients();
+        model.addAttribute("patients", allPatients);
     }
 
     @RequestMapping(value = "/module/ongezamgonjwa/addpatient.form" ,method = RequestMethod.POST)
-    public String addPatient(ModelMap model, WebRequest webRequest, HttpSession httpSession,
+    public String addPatient( HttpSession httpSession,
                              @RequestParam(value = "fname", required = false) String fname,
                              @RequestParam(value = "mname", required = false) String mname,
                              @RequestParam(value = "lname",required = false)String lname,
                              @RequestParam(value = "dob", required = true) String dateofbirth,
                              @RequestParam(value = "sex",required = false)String sex,
                              @RequestParam(value = "NID",required = false)String nid) throws ParseException {
-            String expectedPattern = "dd-mm-yyyy";
+        try{
+           String expectedPattern = "dd-mm-yyyy";
             SimpleDateFormat formatter = new SimpleDateFormat(expectedPattern);
             Date date = formatter.parse(dateofbirth);
 
@@ -81,12 +84,19 @@ public class  ongezamgonjwaManageController {
             patient.setBirthdate(date);
 
 
-            //PatientIdentifierValidator.validateIdentifier(patientIdentifier);
+            PatientIdentifierValidator.validateIdentifier(patientIdentifier);
             patient.addIdentifier(patientIdentifier);
 
             //saving the patient
-            Context.getPatientService().savePatient(patient);
-            httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "Registered Successfully");
-            return "redirect:manage.form";
+
+                Context.getPatientService().savePatient(patient);
+                httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "Registered Successfully");
+                return "redirect:manage.form";
+            }
+            catch (HibernateOptimisticLockingFailureException ex){
+                httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, ex.getLocalizedMessage());
+                return "redirect:manage.form";
+            }
+
     }
 }
